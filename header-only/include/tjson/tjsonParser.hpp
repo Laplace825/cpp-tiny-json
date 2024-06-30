@@ -1,7 +1,7 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28T17:57:33
- * @lastmod: 2024-06-30T00:07:20
+ * @lastmod: 2024-06-30T20:57:38
  * @description: a json parser
  * @filePath: /tiny-json/header-only/include/tjson/tjsonParser.hpp
  * @lastEditor: Laplace825
@@ -292,6 +292,7 @@ class _ParserScan
                 json_str = json_str.substr(1);
                 return TJsonObj{std::move(res)};
             }
+
             if (json_str[0] == ':')
             {
                 state    = TJsonToken::VALUE_SEPRATOR;
@@ -401,7 +402,6 @@ class Parser : public _ParserScan
                 }
                 break;
             }
-
             case TJsonToken::LIST_BEGIN: {
                 return deal_list(json_str, state, reads, scanImpl);
             }
@@ -413,15 +413,14 @@ class Parser : public _ParserScan
   public:
     Parser() = default;
 
-    Parser(std::string_view json_str)
-        : _origin_str{escape_string(std::string(json_str))}
+    Parser(std::string json_str) : _origin_str{escape_string(json_str)}
     {
         this->operator()();
     }
 
     void set(std::string json_str)
     {
-        _origin_str = escape_string(std::move(json_str));
+        _origin_str = escape_string(json_str);
         this->operator()();
     }
 
@@ -442,6 +441,12 @@ class Parser : public _ParserScan
     }
 
     TJsonObj scan() { return this->operator()(); }
+
+    void clear()
+    {
+        _json_obj.clear();
+        _origin_str.clear();
+    }
 };
 
 } // namespace tjson

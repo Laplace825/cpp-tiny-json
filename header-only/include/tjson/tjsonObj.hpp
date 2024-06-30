@@ -1,7 +1,7 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28T17:45:52
- * @lastmod: 2024-06-30T13:54:33
+ * @lastmod: 2024-06-30T20:56:36
  * @description: the json object with all types
  * @filePath: /tiny-json/header-only/include/tjson/tjsonObj.hpp
  * @lastEditor: Laplace825
@@ -58,7 +58,7 @@ class TJsonObj
         auto DoInvoke = [&](const auto&... args) { std::invoke(op, args...); };
 
         std::visit(
-            [&](auto&& arg) {
+            [&](const auto& arg) {
                 using T = std::decay_t< decltype(arg) >;
                 if constexpr (std::is_same_v< T, std::monostate >)
                 {
@@ -93,11 +93,11 @@ class TJsonObj
                 else if constexpr (std::is_same_v< T, NestingType >)
                 {
                     DoInvoke("{");
-                    for (auto it = arg.begin(); it != arg.end(); ++it)
+                    for (auto it = arg.cbegin(); it != arg.cend(); ++it)
                     {
-                        DoInvoke("\"", it->first, "\": ");
+                        DoInvoke(std::format("\"{}\": ", it->first));
                         it->second.call(op);
-                        if (std::next(it) != arg.end()) DoInvoke(", ");
+                        if (std::next(it) != arg.cend()) DoInvoke(", ");
                     }
                     DoInvoke("}");
                 }
@@ -189,6 +189,8 @@ class TJsonObj
         call([&oss](const auto&... arg) { ((oss << arg), ...); });
         return oss.str();
     }
+
+    void clear() { _value = std::monostate{}; }
 };
 
 } // namespace tjson

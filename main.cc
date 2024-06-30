@@ -1,9 +1,9 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28 10:23:40
- * @lastmod: 2024-06-30T00:14:43
+ * @lastmod: 2024-06-30T20:53:14
  * @description: the main file to deal command line args
- * @filePath: /tiny-json/test.cc
+ * @filePath: /tiny-json/main.cc
  * @lastEditor: Laplace825
  * @ MIT license
  */
@@ -45,6 +45,7 @@ void what_to_do(std::string_view command, std::string_view readStoreOrFind = "")
     }
     else if (command == "-r" || command == "--read")
     {
+        tjson.clear();
         tjfile.readJsonFile(readStoreOrFind);
         tjson.setJsonStr(tjfile.getJsonStr());
     }
@@ -54,7 +55,7 @@ void what_to_do(std::string_view command, std::string_view readStoreOrFind = "")
     }
     else if (command == "-p" || command == "--print")
     {
-        printTj(tjson);
+        tjson.println();
     }
     else if (command == "-f" || command == "--find")
     {
@@ -77,7 +78,7 @@ void what_to_do(std::string_view command, std::string_view readStoreOrFind = "")
     }
 }
 
-auto main(int argc, char *argv[]) -> signed
+auto main(int argc, char* argv[]) -> signed
 {
     if (argc == 1)
     {
@@ -85,7 +86,7 @@ auto main(int argc, char *argv[]) -> signed
         return 0;
     }
     std::vector< std::string_view > args(argc); // store all the args
-    for (auto &arg : args)
+    for (auto& arg : args)
     {
         arg = argv[0];
         ++argv;

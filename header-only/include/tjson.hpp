@@ -1,7 +1,7 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28T17:43:53
- * @lastmod: 2024-06-30T13:54:39
+ * @lastmod: 2024-06-30T21:00:54
  * @description: TJson class to handle json string with method integrating
  * @filePath: /tiny-json/header-only/include/tjson.hpp
  * @lastEditor: Laplace825
@@ -43,7 +43,7 @@ class TJson
   public:
     TJson() = default;
 
-    explicit TJson(std::string_view json_str) : _parser(json_str)
+    explicit TJson(const std::string& json_str) : _parser(json_str)
     {
         /***
          * @param json_str {string_view}: your json string
@@ -144,6 +144,10 @@ class TJson
                    ? TJsonObj{}
                    : result;
     }
+
+    // reset to be empty
+    // use setJsonStr to set new json string 
+    void clear() { _json_dict.clear(); }
 
     void print() const
     {
