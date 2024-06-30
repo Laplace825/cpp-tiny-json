@@ -1,0 +1,19 @@
+{
+    "name": "lap",
+    "score": {
+        "math": 100,
+        "English": 90,
+        "computer": 80
+    },
+    "list": [
+        1,
+        2,
+        3,
+        "Hel\tlo",
+        "p]",
+        {
+            "student": 1,
+            "lop": 2
+        }
+    ]
+}
