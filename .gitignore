@@ -36,3 +36,4 @@ bin-release/*
 cmake_files/*
 compile_commands.json
 rmc-build.sh
+.cache/*
