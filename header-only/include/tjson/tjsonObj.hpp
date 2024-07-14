@@ -40,16 +40,16 @@ class TJsonObj
     using ListType    = std::vector< TJsonObj >;
     using NestingType = std::unordered_map< std::string, TJsonObj >;
     using value_type  = std::variant< std::monostate, // null
-                                      std::string,    // "String"
-                                      ListType,       // [1,2, "ss", {}]
-                                      NestingType, // {"key":{"value":"Hello"}}
-                                      double,      // 1.0
-                                      int,         // 1 2 10
-                                      bool         // true or false
-                                      >;
+         std::string,                                 // "String"
+         ListType,                                    // [1,2, "ss", {}]
+         NestingType, // {"key":{"value":"Hello"}}
+         double,      // 1.0
+         int,         // 1 2 10
+         bool         // true or false
+         >;
 
   private:
-    value_type _value;
+    value_type m_value;
 
   protected:
     template < typename Callable >
@@ -102,16 +102,16 @@ class TJsonObj
                     DoInvoke("}");
                 }
             },
-            _value);
+            m_value);
     }
 
   public:
-    TJsonObj() : _value(std::monostate{}) {}
+    TJsonObj() : m_value(std::monostate{}) {}
 
-    auto& get() const { return _value; }
+    auto& get() const { return m_value; }
 
     template < typename T >
-    explicit TJsonObj(T t) : _value(std::move(t))
+    explicit TJsonObj(T t) : m_value(std::move(t))
     {
     }
 
@@ -130,9 +130,9 @@ class TJsonObj
     {
         std::ostringstream oss;
         NestingType objMap;
-        if (std::holds_alternative< NestingType >(_value))
+        if (std::holds_alternative< NestingType >(m_value))
         {
-            for (const auto& [key, value] : std::get< NestingType >(_value))
+            for (const auto& [key, value] : std::get< NestingType >(m_value))
             {
                 objMap[key] = value;
             }
@@ -150,7 +150,7 @@ class TJsonObj
 
     auto operator=(TJsonObj obj) -> TJsonObj&
     {
-        std::swap(_value, obj._value);
+        std::swap(m_value, obj.m_value);
         return *this;
     }
 
@@ -158,14 +158,14 @@ class TJsonObj
         requires(!std::is_same_v< T, TJsonObj >)
     void set(const T& src)
     {
-        _value = src;
+        m_value = src;
     }
 
     auto operator[](size_t index) -> TJsonObj&
     {
-        if (std::holds_alternative< ListType >(_value))
+        if (std::holds_alternative< ListType >(m_value))
         {
-            return std::get< ListType >(_value)[index];
+            return std::get< ListType >(m_value)[index];
         }
         throw std::runtime_error(
             "\033[1;31mNot a ListType, can't use []\033[0m");
@@ -173,15 +173,18 @@ class TJsonObj
 
     auto operator[](const std::string& key) -> TJsonObj&
     {
-        if (std::holds_alternative< NestingType >(_value))
+        if (std::holds_alternative< NestingType >(m_value))
         {
-            return std::get< NestingType >(_value)[key];
+            return std::get< NestingType >(m_value)[key];
         }
         throw std::runtime_error(
             "\033[1;31mNot a NestingType, can't use []\033[0m");
     }
 
-    bool operator==(const TJsonObj& obj) const { return _value == obj._value; }
+    bool operator==(const TJsonObj& obj) const
+    {
+        return m_value == obj.m_value;
+    }
 
     std::string to_string() const
     {
@@ -190,7 +193,7 @@ class TJsonObj
         return oss.str();
     }
 
-    void clear() { _value = std::monostate{}; }
+    void clear() { m_value = std::monostate{}; }
 };
 
 } // namespace tjson

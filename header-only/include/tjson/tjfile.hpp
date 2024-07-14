@@ -11,13 +11,13 @@
 #ifndef __TJSON_FILE_HPP__
 #define __TJSON_FILE_HPP__
 
+#include "tjson.hpp"
+#include "tjson/tjsonObj.hpp"
+
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <type_traits>
-
-#include "tjson.hpp"
-#include "tjson/tjsonObj.hpp"
 
 namespace lap {
 
@@ -27,8 +27,8 @@ namespace tjson {
 class TJsonFile
 {
   private:
-    std::filesystem::path _path;
-    std::string _json_str;
+    std::filesystem::path m_path;
+    std::string m_json_str;
 
   protected:
     static char unescape_char(char ch)
@@ -71,17 +71,17 @@ class TJsonFile
     }
 
   public:
-    TJsonFile() : _path(std::filesystem::current_path()) {}
+    TJsonFile() : m_path(std::filesystem::current_path()) {}
 
-    TJsonFile(const std::filesystem::path& path) : _path(path) {}
+    TJsonFile(const std::filesystem::path& path) : m_path(path) {}
 
-    bool readJsonFile() { return readJsonFile(_path); }
+    bool readJsonFile() { return readJsonFile(m_path); }
 
     bool readJsonFile(const std::filesystem::path& path)
     {
         std::ifstream ifs(path, std::ios::in);
-        std::cout << std::format("\033[1;33mreading\033[0m: {}\n",
-                                 path.string());
+        std::cout << std::format(
+            "\033[1;33mreading\033[0m: {}\n", path.string());
         if (ifs.is_open())
         {
             std::string line;
@@ -90,14 +90,14 @@ class TJsonFile
             {
                 reads.append(line);
             }
-            _json_str = std::move(reads);
+            m_json_str = std::move(reads);
             ifs.close();
             return true;
         }
         throw std::runtime_error("\033[1;31mfile not found\033[0m");
     }
 
-    std::string getJsonStr() const { return _json_str; }
+    std::string getJsonStr() const { return m_json_str; }
 
     bool storeJsonStr2Where(const std::filesystem::path& path) const
     {
@@ -105,36 +105,35 @@ class TJsonFile
         if (path.string().ends_with(".json"))
         {
             ofs.open(path);
-            std::cout << std::format("\033[1;33mstore to\033[0m : {}\n",
-                                     path.c_str());
+            std::cout << std::format(
+                "\033[1;33mstore to\033[0m : {}\n", path.c_str());
         }
         else
         {
             auto default_path = path.string() + "/tjson.json";
             ofs.open(default_path);
-            std::cout << std::format("\033[1;33mstore to\033[0m : {}\n",
-                                     std::move(default_path));
+            std::cout << std::format(
+                "\033[1;33mstore to\033[0m : {}\n", std::move(default_path));
         }
 
-        ofs << unescape_string(_json_str);
+        ofs << unescape_string(m_json_str);
 
         if (!ofs)
         {
-            throw std::runtime_error(
-                std::format("\033[1;31m{}\033[0m",
-                            "Failed to write file: " + path.string()));
+            throw std::runtime_error(std::format("\033[1;31m{}\033[0m",
+                "Failed to write file: " + path.string()));
         }
         return true;
     }
 
-    bool storeJsonStr2Where() const { return storeJsonStr2Where(_path); }
+    bool storeJsonStr2Where() const { return storeJsonStr2Where(m_path); }
 
     template < typename T >
         requires(std::is_same_v< T, TJsonObj > || std::is_same_v< T, TJson >)
-    bool dumpJsonObj2File(const T& json_obj,
-                          const std::filesystem::path& path = "")
+    bool dumpJsonObj2File(
+        const T& json_obj, const std::filesystem::path& path = "")
     {
-        _json_str = std::move(json_obj.to_string());
+        m_json_str = std::move(json_obj.to_string());
         return *path.c_str() == '\0' ? storeJsonStr2Where()
                                      : storeJsonStr2Where(path);
     }

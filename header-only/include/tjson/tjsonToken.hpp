@@ -38,9 +38,9 @@ struct TJsonToken
         END // EOF
     };
 
-    Type _value;
+    Type m_value;
 
-    TJsonToken(Type value) : _value(value) {}
+    TJsonToken(Type value) : m_value(value) {}
 };
 
 } // namespace tjson

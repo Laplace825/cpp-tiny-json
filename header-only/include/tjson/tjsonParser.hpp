@@ -10,6 +10,9 @@
 #ifndef __TJSON_PARSER_HPP__
 #define __TJSON_PARSER_HPP__
 
+#include "tjson/tjsonObj.hpp"
+#include "tjson/tjsonToken.hpp"
+
 #include <charconv>
 #include <format>
 #include <optional>
@@ -18,9 +21,6 @@
 #include <string_view>
 #include <utility>
 #include <variant>
-
-#include "tjson/tjsonObj.hpp"
-#include "tjson/tjsonToken.hpp"
 
 namespace lap {
 
@@ -162,8 +162,8 @@ class _ParserScan
         return res;
     }
 
-    static std::size_t jump_whitespace(const std::string_view str,
-                                       std::size_t begin) noexcept
+    static std::size_t jump_whitespace(
+        const std::string_view str, std::size_t begin) noexcept
     {
         for (; begin < str.size(); ++begin)
         {
@@ -187,17 +187,18 @@ class _ParserScan
         return std::nullopt;
     }
 
-    static void UpdateState(std::string& json_str, TJsonToken::Type& state,
-                            std::size_t& reads, std::size_t begin)
+    static void UpdateState(std::string& json_str,
+        TJsonToken::Type& state,
+        std::size_t& reads,
+        std::size_t begin)
     {
         reads    = jump_whitespace(json_str, begin);
         state    = scan_char(json_str[reads]);
         json_str = json_str.substr(reads);
     };
 
-    static TJsonObj deal_value_string(std::string& json_str,
-                                      TJsonToken::Type& state,
-                                      std::size_t& reads)
+    static TJsonObj deal_value_string(
+        std::string& json_str, TJsonToken::Type& state, std::size_t& reads)
     {
         // find the end of the json object
         auto find_res = json_str.find("\"");
@@ -223,17 +224,16 @@ class _ParserScan
         }
     }
 
-    static TJsonObj deal_value_number(std::string& json_str,
-                                      TJsonToken::Type& state,
-                                      std::size_t& reads)
+    static TJsonObj deal_value_number(
+        std::string& json_str, TJsonToken::Type& state, std::size_t& reads)
     { // regex the float number and the scientific notation
         std::regex number_re{"[-]?[0-9]+(\\.[0-9]*)?([eE][+-]?[0-9]+)?"};
 
         //  store the match result
         std::match_results< decltype(json_str.begin()) > sub_match;
 
-        if (std::regex_search(json_str.begin(), json_str.end(), sub_match,
-                              number_re))
+        if (std::regex_search(
+                json_str.begin(), json_str.end(), sub_match, number_re))
         {
             // if we find the number, then we try to parse it
             auto str = sub_match.str();
@@ -252,8 +252,10 @@ class _ParserScan
     }
 
     template < typename Callable >
-    static TJsonObj deal_list(std::string& json_str, TJsonToken::Type& state,
-                              std::size_t& reads, Callable&& op)
+    static TJsonObj deal_list(std::string& json_str,
+        TJsonToken::Type& state,
+        std::size_t& reads,
+        Callable&& op)
     {
         TJsonObj::ListType res{};
         reads = 1;
@@ -277,8 +279,9 @@ class _ParserScan
 
     template < typename Callable >
     static TJsonObj deal_obj_begin(std::string& json_str,
-                                   TJsonToken::Type& state, std::size_t& reads,
-                                   Callable&& op)
+        TJsonToken::Type& state,
+        std::size_t& reads,
+        Callable&& op)
     {
         TJsonObj::NestingType res{};
         reads = 1;
@@ -324,17 +327,19 @@ class Parser : public _ParserScan
     friend class TJson;
 
   private:
-    TJsonObj _json_obj;
-    std::string _origin_str;
+    TJsonObj m_json_obj;
+    std::string m_origin_str;
 
-    static TJsonObj scanImpl(std::string& json_str, TJsonToken::Type& state,
-                             std::size_t& reads)
+    static TJsonObj scanImpl(
+        std::string& json_str, TJsonToken::Type& state, std::size_t& reads)
     { /***
        * @param  reads {std::size_t}: how mach you have read
        * @param  state {TJsonTokenType}: use as a state machine
        * @return sttd::pair {*}: the json object and the reads
-       * @exception: std::invalid_argument if the string can't be parsed
-       * @description: scan the json string and return the json object
+       * @exception: std::invalid_argument if the string can't be
+       *parsed
+       * @description: scan the json string and return the json
+       *object
        ***/
         if (json_str.empty())
         {
@@ -383,7 +388,7 @@ class Parser : public _ParserScan
                     throw std::invalid_argument(
                         std::format("\033[1;31mjson boolean {} ,maybe you mean "
                                     "false\033[0m",
-                                    json_str.substr(0, 5)));
+                            json_str.substr(0, 5)));
                 }
                 break;
             }
@@ -398,7 +403,7 @@ class Parser : public _ParserScan
                     throw std::invalid_argument(
                         std::format("\033[1;31mjson NULL {} ,maybe you mean "
                                     "null\033[0m",
-                                    json_str.substr(0, 4)));
+                            json_str.substr(0, 4)));
                 }
                 break;
             }
@@ -413,30 +418,30 @@ class Parser : public _ParserScan
   public:
     Parser() = default;
 
-    Parser(std::string json_str) : _origin_str{escape_string(json_str)}
+    Parser(std::string json_str) : m_origin_str{escape_string(json_str)}
     {
         this->operator()();
     }
 
     void set(std::string json_str)
     {
-        _origin_str = escape_string(json_str);
+        m_origin_str = escape_string(json_str);
         this->operator()();
     }
 
     TJsonObj operator()()
     {
-        std::string json_str   = _origin_str;
+        std::string json_str   = m_origin_str;
         std::size_t reads      = jump_whitespace(json_str, 0);
         TJsonToken::Type state = scan_char(json_str[reads]);
         json_str               = json_str.substr(reads);
-        _json_obj              = scanImpl(json_str, state, reads);
-        return _json_obj;
+        m_json_obj             = scanImpl(json_str, state, reads);
+        return m_json_obj;
     }
 
     TJsonObj operator()(std::string_view json_str, bool isEscape = false)
     {
-        _json_obj.set(escape_string(std::string(json_str)));
+        m_json_obj.set(escape_string(std::string(json_str)));
         return this->operator()();
     }
 
@@ -444,8 +449,8 @@ class Parser : public _ParserScan
 
     void clear()
     {
-        _json_obj.clear();
-        _origin_str.clear();
+        m_json_obj.clear();
+        m_origin_str.clear();
     }
 };
 

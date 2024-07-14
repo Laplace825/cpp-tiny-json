@@ -11,15 +11,15 @@
 #ifndef __TJSON_HPP__
 #define __TJSON_HPP__
 
+#include "tjson/tjsonObj.hpp"
+#include "tjson/tjsonParser.hpp"
+#include "tjson/tjsonToken.hpp"
+
 #include <ostream>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <variant>
-
-#include "tjson/tjsonObj.hpp"
-#include "tjson/tjsonParser.hpp"
-#include "tjson/tjsonToken.hpp"
 
 namespace lap {
 
@@ -37,30 +37,30 @@ class TJson
     using Token = TJsonToken;
 
   protected:
-    TJsonObj::NestingType _json_dict;
-    Parser _parser;
+    TJsonObj::NestingType m_json_dict;
+    Parser m_parser;
 
   public:
     TJson() = default;
 
-    explicit TJson(const std::string& json_str) : _parser(json_str)
+    explicit TJson(const std::string& json_str) : m_parser(json_str)
     {
         /***
          * @param json_str {string_view}: your json string
          * @description: will process and get the json to a unordered_map
          ***/
-        for (const auto& [key, value] : _parser._json_obj.to_map().first)
+        for (const auto& [key, value] : m_parser.m_json_obj.to_map().first)
         {
-            _json_dict[key] = value;
+            m_json_dict[key] = value;
         }
     }
 
     void setJsonStr(std::string json_str)
     {
-        _parser.set(std::move(json_str));
-        for (const auto& [key, value] : _parser._json_obj.to_map().first)
+        m_parser.set(std::move(json_str));
+        for (const auto& [key, value] : m_parser.m_json_obj.to_map().first)
         {
-            _json_dict[key] = value;
+            m_json_dict[key] = value;
         }
     }
 
@@ -70,20 +70,22 @@ class TJson
     // dfs like
     TJsonObj find(const std::string_view key) const
     {
-        if (_json_dict.empty())
+        if (m_json_dict.empty())
         {
             return TJsonObj{};
         }
         TJsonObj result;
-        auto findImpl =
-            [&](auto&& self_func, const TJsonObj::NestingType& _json_str_map,
-                const TJsonObj::ListType& _json_str_list = {},
-                Token::Type isList = Token::VALUE_JSON_ELEMENT) -> TJsonObj {
+        auto findImpl = [&](auto&& self_func,
+                            const TJsonObj::NestingType& _json_str_map,
+                            const TJsonObj::ListType& _json_str_list = {},
+                            Token::Type isList =
+                                Token::VALUE_JSON_ELEMENT) -> TJsonObj {
             switch (isList)
             {
                 case Token::VALUE_JSON_ELEMENT: {
                     for (auto iter = _json_str_map.begin();
-                         iter != _json_str_map.end(); ++iter)
+                         iter != _json_str_map.end();
+                         ++iter)
                     {
                         if (iter->first == key)
                         {
@@ -95,18 +97,19 @@ class TJson
                                      iter->second.get()))
                         {
                             self_func(self_func,
-                                      std::get< TJsonObj::NestingType >(
-                                          iter->second.get()),
-                                      _json_str_list,
-                                      Token::VALUE_JSON_ELEMENT);
+                                std::get< TJsonObj::NestingType >(
+                                    iter->second.get()),
+                                _json_str_list,
+                                Token::VALUE_JSON_ELEMENT);
                         }
                         else if (std::holds_alternative< TJsonObj::ListType >(
                                      iter->second.get()))
                         {
-                            self_func(self_func, _json_str_map,
-                                      std::get< TJsonObj::ListType >(
-                                          iter->second.get()),
-                                      Token::LIST_BEGIN);
+                            self_func(self_func,
+                                _json_str_map,
+                                std::get< TJsonObj::ListType >(
+                                    iter->second.get()),
+                                Token::LIST_BEGIN);
                         }
                     }
                     return result;
@@ -119,16 +122,16 @@ class TJson
                                 element.get()))
                         {
                             self_func(self_func,
-                                      std::get< TJsonObj::NestingType >(
-                                          element.get()),
-                                      _json_str_list,
-                                      Token::VALUE_JSON_ELEMENT);
+                                std::get< TJsonObj::NestingType >(
+                                    element.get()),
+                                _json_str_list,
+                                Token::VALUE_JSON_ELEMENT);
                         }
                         else if (std::holds_alternative< TJsonObj::ListType >(
                                      element.get()))
                         {
-                            self_func(
-                                self_func, _json_str_map,
+                            self_func(self_func,
+                                _json_str_map,
                                 std::get< TJsonObj::ListType >(element.get()),
                                 Token::LIST_BEGIN);
                         }
@@ -139,20 +142,20 @@ class TJson
             }
             return result;
         };
-        result = findImpl(findImpl, _json_dict);
+        result = findImpl(findImpl, m_json_dict);
         return std::holds_alternative< std::monostate >(result.get())
                    ? TJsonObj{}
                    : result;
     }
 
     // reset to be empty
-    // use setJsonStr to set new json string 
-    void clear() { _json_dict.clear(); }
+    // use setJsonStr to set new json string
+    void clear() { m_json_dict.clear(); }
 
     void print() const
     {
         std::cout << "\n{";
-        for (const auto& [key, value] : _json_dict)
+        for (const auto& [key, value] : m_json_dict)
         {
             std::cout << "\n\t\"" << key << "\": ";
             value.println();
@@ -166,7 +169,7 @@ class TJson
         std::cout << std::endl;
     }
 
-    std::string to_string() const { return _parser._json_obj.to_string(); }
+    std::string to_string() const { return m_parser.m_json_obj.to_string(); }
 };
 
 } // namespace tjson
