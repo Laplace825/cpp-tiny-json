@@ -38,3 +38,4 @@ compile_commands.json
 rmc-build.sh
 .cache/*
 cmake-build/*
+build/*
