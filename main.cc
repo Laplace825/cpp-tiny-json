@@ -8,22 +8,21 @@
  * @ MIT license
  */
 
+#include <format>
+#include <iostream>
+#include <string_view>
+
 #include "tjson.hpp"
 #include "tjson/tjfile.hpp"
 #include "tjson/tjprint.hpp"
 #include "tjson/tjsonParser.hpp"
-
-#include <format>
-#include <iostream>
-#include <string_view>
 
 using namespace lap::tjson;
 
 TJsonFile tjfile;
 TJson tjson;
 
-void help_msg()
-{
+void help_msg() {
     std::cout << "\033[1;32mcan only read json file with '{' begin\033[0m\n"
                  "[command line args]:\n"
                  "  -h, --help: show this help message\n"
@@ -34,82 +33,66 @@ void help_msg()
                  "[example]:\n"
                  "tjson -r ./file.json\n -s ./file_store.json\n";
     std::cout << std::format("Now in path \033[1;32m{}\033[0m\n",
-        std::filesystem::current_path().c_str());
+      std::filesystem::current_path().c_str());
 }
 
-void what_to_do(std::string_view command, std::string_view readStoreOrFind = "")
-{
-    if (command == "-h" || command == "--help")
-    {
+void what_to_do(
+  std::string_view command, std::string_view readStoreOrFind = "") {
+    if (command == "-h" || command == "--help") {
         help_msg();
     }
-    else if (command == "-r" || command == "--read")
-    {
+    else if (command == "-r" || command == "--read") {
         tjson.clear();
         tjfile.readJsonFile(readStoreOrFind);
         tjson.setJsonStr(tjfile.getJsonStr());
     }
-    else if (command == "-s" || command == "--store")
-    {
+    else if (command == "-s" || command == "--store") {
         tjfile.dumpJsonObj2File(tjson, readStoreOrFind);
     }
-    else if (command == "-p" || command == "--print")
-    {
+    else if (command == "-p" || command == "--print") {
         tjson.println();
     }
-    else if (command == "-f" || command == "--find")
-    {
+    else if (command == "-f" || command == "--find") {
         auto findResult = tjson[readStoreOrFind];
-        if (findResult != TJsonObj{})
-        {
+        if (findResult != TJsonObj{}) {
             std::cout << std::format("\033[1;32m{}\033[0m:", readStoreOrFind)
                       << findResult << std::endl;
         }
-        else
-        {
+        else {
             std::cout << "null, \033[1;34mmaybe you should read json file "
                          "first\033[0m\n"
                          "[example] tjson -r ./file.json -f \"lap\"\n";
         }
     }
-    else
-    {
+    else {
         help_msg();
     }
 }
 
-auto main(int argc, char* argv[]) -> signed
-{
-    if (argc == 1)
-    {
+auto main(int argc, char* argv[]) -> signed {
+    if (argc == 1) {
         help_msg();
         return 0;
     }
     std::vector< std::string_view > args(
-        argv + 1, argv + argc); // store all the args
+      argv + 1, argv + argc); // store all the args
 
-    for (size_t i = 0; i < args.size();)
-    {
-        if (args[i] == "-h" || args[i] == "--help")
-        {
+    for (size_t i = 0; i < args.size();) {
+        if (args[i] == "-h" || args[i] == "--help") {
             what_to_do(args[i++]);
         }
-        if (args[i] == "-p" || args[i] == "--print")
-        {
+        if (args[i] == "-p" || args[i] == "--print") {
             what_to_do(args[i++]);
         }
-        if (args[i] == "-f" || args[i] == "--find")
-        {
+        if (args[i] == "-f" || args[i] == "--find") {
             what_to_do(args[i], args[i + 1]);
             i += 2;
         }
-        if (args[i] == "-r" || args[i] == "--read")
-        {
+        if (args[i] == "-r" || args[i] == "--read") {
             what_to_do(args[i], args[i + 1]);
             i += 2;
         }
-        if (args[i] == "-s" || args[i] == "--store")
-        {
+        if (args[i] == "-s" || args[i] == "--store") {
             what_to_do(args[i], args[i + 1]);
             i += 2;
         }
