@@ -24,18 +24,14 @@ namespace tjson {
  * @param tj {T}: T may be TJson, TJsonObj
  */
 template < typename T >
-void printTj(const T& tj)
-{
-    if constexpr (std::is_same_v< T, TJsonObj >)
-    {
+void Tjprint(const T& tj) {
+    if constexpr (std::is_same_v< T, TJsonObj >) {
         tj.println();
     }
-    else if constexpr (std::is_same_v< T, TJson >)
-    {
+    else if constexpr (std::is_same_v< T, TJson >) {
         tj.println();
     }
-    else
-    {
+    else {
         std::cout << std::format("{}", tj) << std::endl;
     }
 }

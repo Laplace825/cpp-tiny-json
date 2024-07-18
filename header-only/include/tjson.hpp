@@ -1,9 +1,9 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28T17:43:53
- * @lastmod: 2024-06-30T21:00:54
+ * @lastmod: 2024-07-19T01:53:29
  * @description: TJson class to handle json string with method integrating
- * @filePath: /tiny-json/header-only/include/tjson.hpp
+ * @filePath: /cpp-tiny-json/header-only/include/tjson.hpp
  * @lastEditor: Laplace825
  * @ MIT lisence
  */
@@ -11,24 +11,26 @@
 #ifndef __TJSON_HPP__
 #define __TJSON_HPP__
 
-#include "tjson/tjsonObj.hpp"
-#include "tjson/tjsonParser.hpp"
-#include "tjson/tjsonToken.hpp"
-
+#include <algorithm>
+#include <cstddef>
+#include <deque>
 #include <ostream>
 #include <string_view>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <variant>
+
+#include "tjson/tjsonObj.hpp"
+#include "tjson/tjsonParser.hpp"
+#include "tjson/tjsonToken.hpp"
 
 namespace lap {
 
 namespace tjson {
 
-class TJson
-{
-    friend std::ostream& operator<<(std::ostream& os, const TJson& obj)
-    {
+class TJson {
+    friend std::ostream& operator<<(std::ostream& os, const TJson& obj) {
         obj.print();
         return os;
     }
@@ -41,135 +43,115 @@ class TJson
     Parser m_parser;
 
   public:
-    TJson() = default;
+    TJson()  = default;
+    ~TJson() = default;
 
-    explicit TJson(const std::string& json_str) : m_parser(json_str)
-    {
+    explicit TJson(const std::string& json_str) : m_parser(json_str) {
         /***
          * @param json_str {string_view}: your json string
          * @description: will process and get the json to a unordered_map
          ***/
-        for (const auto& [key, value] : m_parser.m_json_obj.to_map().first)
-        {
+        for (const auto& [key, value] : m_parser.m_json_obj.toMap().first) {
             m_json_dict[key] = value;
         }
     }
 
-    void setJsonStr(std::string json_str)
-    {
+    void setJsonStr(std::string json_str) {
         m_parser.set(std::move(json_str));
-        for (const auto& [key, value] : m_parser.m_json_obj.to_map().first)
-        {
+        for (const auto& [key, value] : m_parser.m_json_obj.toMap().first) {
             m_json_dict[key] = value;
         }
     }
 
-    auto operator[](const std::string_view key) const { return find(key); }
+    auto operator[](const std::string_view key) { return find(key); }
 
-    // recursive find key's value
-    // dfs like
-    TJsonObj find(const std::string_view key) const
-    {
-        if (m_json_dict.empty())
-        {
-            return TJsonObj{};
+    // BFS like
+    TJsonObj* find(const std::string_view key) {
+        if (m_json_dict.empty()) {
+            throw std::runtime_error("json object is empty");
         }
-        TJsonObj result;
-        auto findImpl = [&](auto&& self_func,
-                            const TJsonObj::NestingType& _json_str_map,
-                            const TJsonObj::ListType& _json_str_list = {},
-                            Token::Type isList =
-                                Token::VALUE_JSON_ELEMENT) -> TJsonObj {
-            switch (isList)
-            {
-                case Token::VALUE_JSON_ELEMENT: {
-                    for (auto iter = _json_str_map.begin();
-                         iter != _json_str_map.end();
-                         ++iter)
-                    {
-                        if (iter->first == key)
-                        {
-                            result = iter->second;
-                            break;
-                        }
-                        else if (std::holds_alternative<
-                                     TJsonObj::NestingType >(
-                                     iter->second.get()))
-                        {
-                            self_func(self_func,
-                                std::get< TJsonObj::NestingType >(
-                                    iter->second.get()),
-                                _json_str_list,
-                                Token::VALUE_JSON_ELEMENT);
-                        }
-                        else if (std::holds_alternative< TJsonObj::ListType >(
-                                     iter->second.get()))
-                        {
-                            self_func(self_func,
-                                _json_str_map,
-                                std::get< TJsonObj::ListType >(
-                                    iter->second.get()),
-                                Token::LIST_BEGIN);
-                        }
-                    }
-                    return result;
-                }
-                case Token::LIST_BEGIN: {
-                    // Handling list elements
-                    for (auto& element : _json_str_list)
-                    {
-                        if (std::holds_alternative< TJsonObj::NestingType >(
-                                element.get()))
-                        {
-                            self_func(self_func,
-                                std::get< TJsonObj::NestingType >(
-                                    element.get()),
-                                _json_str_list,
-                                Token::VALUE_JSON_ELEMENT);
-                        }
-                        else if (std::holds_alternative< TJsonObj::ListType >(
-                                     element.get()))
-                        {
-                            self_func(self_func,
-                                _json_str_map,
-                                std::get< TJsonObj::ListType >(element.get()),
-                                Token::LIST_BEGIN);
-                        }
-                    }
-                    return result;
-                }
-                default: break;
+        const TJsonObj* result{};
+        using std::holds_alternative;
+
+        // BFS
+        for (auto iter = m_json_dict.begin(); iter != m_json_dict.end(); ++iter)
+        {
+            if (iter->first == key) {
+                return &iter->second;
             }
-            return result;
-        };
-        result = findImpl(findImpl, m_json_dict);
-        return std::holds_alternative< std::monostate >(result.get())
-                   ? TJsonObj{}
-                   : result;
+        }
+
+        std::deque< const TJsonObj* > bfs_queue;
+        bfs_queue.push_back(&m_json_dict.begin()->second);
+
+        while (!bfs_queue.empty()) {
+            auto bfs_front = bfs_queue.front();
+            bfs_queue.pop_front();
+            if (holds_alternative< TJsonObj::NestingType >(bfs_front->get())) {
+                auto& nesting_obj =
+                  std::get< TJsonObj::NestingType >(bfs_front->get());
+
+                auto iter = nesting_obj.find(key.data());
+                if (iter != nesting_obj.end()) {
+                    result = &(iter->second); // find it and break
+                    break;
+                }
+            }
+            else if (holds_alternative< TJsonObj::ListType >(bfs_front->get()))
+            {
+                auto& list_obj =
+                  std::get< TJsonObj::ListType >(bfs_front->get());
+
+                for (auto element = list_obj.begin(); element != list_obj.end();
+                  ++element)
+                {
+                    if (holds_alternative< TJsonObj::NestingType >( // only nest
+                                                                    // to find
+                          element->get()))
+                    {
+                        auto& nest_obj =
+                          std::get< TJsonObj::NestingType >(element->get());
+                        auto iter = nest_obj.find(key.data());
+                        if (iter != nest_obj.end()) {
+                            result = &(iter->second);
+                        }
+                    }
+                }
+            }
+        }
+
+        return const_cast< TJsonObj* >(result);
     }
 
     // reset to be empty
     // use setJsonStr to set new json string
     void clear() { m_json_dict.clear(); }
 
-    void print() const
-    {
+    void print() const {
         std::cout << "\n{";
-        for (const auto& [key, value] : m_json_dict)
-        {
+        for (const auto& [key, value] : m_json_dict) {
             std::cout << "\n\t\"" << key << "\": ";
             value.println();
         }
         std::cout << "}";
     }
 
-    void println() const
-    {
+    void println() const {
         this->print();
         std::cout << std::endl;
     }
 
-    std::string to_string() const { return m_parser.m_json_obj.to_string(); }
+    std::string toString() const { return m_parser.m_json_obj.toString(); }
+
+    auto begin() const {
+        auto begin_iter = m_json_dict.cbegin();
+        return begin_iter;
+    }
+
+    auto end() const {
+        auto end_iter = m_json_dict.cend();
+        return end_iter;
+    }
 };
 
 } // namespace tjson
