@@ -16,16 +16,14 @@ if [ ! -d $cur/cmake_files ];then
     mkdir "$cur/cmake_files"
 fi
 
-cd "$cur/cmake_files"
-
-cmake_folder=`pwd`
+cmake_folder="$cur/cmake_files"
 
 if [ ! -d $cmake_folder/cmake-$build_type-build ];then
     mkdir "${cmake_folder}/cmake-$build_type-build"
 fi
 
-cd "$cmake_folder/cmake-$build_type-build"
-cmake $cur -DCMAKE_BUILD_TYPE="$build_type"
-mv compile_commands.json $cur/compile_commands.json
-cmake --build . -j16
-cd $cur 
+build_dir="${cmake_folder}/cmake-${build_type}-build"
+
+cmake -S $cur -B "${build_dir}" -DCMAKE_BUILD_TYPE="$build_type"
+mv "${build_dir}/compile_commands.json" $cur/compile_commands.json
+cmake --build "${build_dir}" -j16
