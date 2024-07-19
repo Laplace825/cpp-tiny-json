@@ -171,7 +171,21 @@ class TJson {
         std::cout << std::endl;
     }
 
-    std::string toString() const { return m_parser.m_json_obj.toString(); }
+    std::string toString() const {
+        std::ostringstream oss;
+        oss << "{";
+        for (const auto& [key, value] : m_json_dict) {
+            oss << "\"" << key << "\": ";
+            oss << value.toString() << ",";
+        }
+        oss << "}";
+        return oss.str();
+    }
+
+    void freshParser() {
+        m_parser.clear();
+        m_parser.set(toString());
+    }
 
     auto cbegin() const { return m_json_dict.cbegin(); }
 

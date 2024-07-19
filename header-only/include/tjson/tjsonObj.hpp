@@ -53,7 +53,6 @@ class TJsonObj {
     template < typename Callable >
     void call(const Callable& op) const {
         auto DoInvoke = [&](const auto&... args) { std::invoke(op, args...); };
-
         std::visit(
           [&](const auto& arg) {
               using T = std::decay_t< decltype(arg) >;

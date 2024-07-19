@@ -57,7 +57,8 @@ auto main() -> signed {
         tj.find("lop") = "hl";
         tj["list"][3]  = "chage] here";
         std::cout << tj << '\n';
-        tjf.dumpJsonObj2File(tj, "./testDumpChangeStudent.json");
+        tj.freshParser();
+        tjf.dumpJsonObj2File(tj, "./testDumpChange.json");
 
         std::cout
           << "\033[1;32mfind a can't find key in the json object\033[0m\n";
