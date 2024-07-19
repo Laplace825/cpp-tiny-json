@@ -1,7 +1,7 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28T17:43:53
- * @lastmod: 2024-07-19T01:53:29
+ * @lastmod: 2024-07-20T17:31:29
  * @description: TJson class to handle json string with method integrating
  * @filePath: /cpp-tiny-json/header-only/include/tjson.hpp
  * @lastEditor: Laplace825
@@ -11,12 +11,9 @@
 #ifndef __TJSON_HPP__
 #define __TJSON_HPP__
 
-#include <algorithm>
-#include <cstddef>
 #include <deque>
 #include <ostream>
 #include <string_view>
-#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <variant>
@@ -48,8 +45,8 @@ class TJson {
 
     explicit TJson(const std::string& json_str) : m_parser(json_str) {
         /***
-         * @param json_str {string_view}: your json string
-         * @description: will process and get the json to a unordered_map
+         * @brief: will process and get the json to a unordered_map
+         * @param: json_str {string_view}: your json string
          ***/
         for (const auto& [key, value] : m_parser.m_json_obj.toMap().first) {
             m_json_dict[key] = value;
@@ -63,45 +60,41 @@ class TJson {
         }
     }
 
-    auto operator[](const std::string_view key) { return find(key); }
-
-    // BFS like
-    TJsonObj* find(const std::string_view key) {
+    /**
+     * @brief: BFS like search to find the key in json object
+     * @param: key {string_view}: the key's value you want to find
+     * @return: the reference of the value
+     */
+    TJsonObj& find(const std::string_view key) {
         if (m_json_dict.empty()) {
             throw std::runtime_error("json object is empty");
         }
         const TJsonObj* result{};
         using std::holds_alternative;
 
-        // BFS
-        for (auto iter = m_json_dict.begin(); iter != m_json_dict.end(); ++iter)
-        {
-            if (iter->first == key) {
-                return &iter->second;
-            }
-        }
-
-        std::deque< const TJsonObj* > bfs_queue;
-        bfs_queue.push_back(&m_json_dict.begin()->second);
-
-        while (!bfs_queue.empty()) {
-            auto bfs_front = bfs_queue.front();
-            bfs_queue.pop_front();
-            if (holds_alternative< TJsonObj::NestingType >(bfs_front->get())) {
-                auto& nesting_obj =
-                  std::get< TJsonObj::NestingType >(bfs_front->get());
-
-                auto iter = nesting_obj.find(key.data());
-                if (iter != nesting_obj.end()) {
-                    result = &(iter->second); // find it and break
-                    break;
+        auto bfs_search = [&]() {
+            // BFS
+            for (auto iter = m_json_dict.begin(); iter != m_json_dict.end();
+              ++iter)
+            {
+                if (iter->first == key) {
+                    return &iter->second;
                 }
             }
-            else if (holds_alternative< TJsonObj::ListType >(bfs_front->get()))
-            {
-                auto& list_obj =
-                  std::get< TJsonObj::ListType >(bfs_front->get());
 
+            std::deque< const TJsonObj* > bfs_queue;
+            bfs_queue.push_back(&m_json_dict.begin()->second);
+
+            auto nested = [&](const TJsonObj::NestingType& nest_obj) {
+                auto iter = nest_obj.find(key.data());
+                if (iter != nest_obj.end()) {
+                    result = &(iter->second);
+                    return true; // find
+                }
+                return false;
+            };
+
+            auto listed = [&](const TJsonObj::ListType& list_obj) {
                 for (auto element = list_obj.begin(); element != list_obj.end();
                   ++element)
                 {
@@ -111,20 +104,57 @@ class TJson {
                     {
                         auto& nest_obj =
                           std::get< TJsonObj::NestingType >(element->get());
-                        auto iter = nest_obj.find(key.data());
-                        if (iter != nest_obj.end()) {
-                            result = &(iter->second);
+                        if (nested(nest_obj)) {
+                            return true;
                         }
                     }
                 }
-            }
-        }
+                return false;
+            };
 
-        return const_cast< TJsonObj* >(result);
+            while (!bfs_queue.empty()) {
+                auto bfs_front = bfs_queue.front();
+                bfs_queue.pop_front();
+                if (holds_alternative< TJsonObj::NestingType >(
+                      bfs_front->get()))
+                {
+                    auto& nesting_obj =
+                      std::get< TJsonObj::NestingType >(bfs_front->get());
+                    if (nested(nesting_obj)) {
+                        break;
+                    }
+                }
+                else if (holds_alternative< TJsonObj::ListType >(
+                           bfs_front->get()))
+                {
+                    auto& list_obj =
+                      std::get< TJsonObj::ListType >(bfs_front->get());
+                    if (listed(list_obj)) {
+                        break;
+                    }
+                }
+            }
+
+            if (!result) {
+                throw std::runtime_error("key not found");
+            }
+            return const_cast< TJsonObj* >(result);
+        }();
+
+        return *const_cast< TJsonObj* >(bfs_search);
     }
 
-    // reset to be empty
-    // use setJsonStr to set new json string
+    /**
+     * @brief: same as find method
+     * @param: key {string_view}: the key's value you want to find
+     * @return: the reference of the value
+     */
+    auto& operator[](const std::string_view key) { return find(key); }
+
+    /**
+     * @brief: reset to be empty,
+     * you can use setJsonStr to set new json string
+     */
     void clear() { m_json_dict.clear(); }
 
     void print() const {
@@ -143,15 +173,9 @@ class TJson {
 
     std::string toString() const { return m_parser.m_json_obj.toString(); }
 
-    auto begin() const {
-        auto begin_iter = m_json_dict.cbegin();
-        return begin_iter;
-    }
+    auto cbegin() const { return m_json_dict.cbegin(); }
 
-    auto end() const {
-        auto end_iter = m_json_dict.cend();
-        return end_iter;
-    }
+    auto cend() const { return m_json_dict.cend(); }
 };
 
 } // namespace tjson

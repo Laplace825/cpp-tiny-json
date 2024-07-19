@@ -99,7 +99,7 @@ class TJsonObj {
     const value_type& get() const { return m_value; }
 
     template < typename T >
-    explicit TJsonObj(T t) : m_value(std::move(t)) {}
+    TJsonObj(T t) : m_value(std::move(t)) {}
 
     ~TJsonObj() = default;
 
