@@ -32,7 +32,7 @@ class TJson {
     }
 
   protected:
-    TJsonObj::NestingType m_json_dict;
+    TJsonObj::DictType m_json_dict;
 
   public:
     TJson()  = default;
@@ -81,7 +81,7 @@ class TJson {
             std::deque< const TJsonObj* > bfs_queue;
             bfs_queue.push_back(&m_json_dict.begin()->second);
 
-            auto nested = [&](const TJsonObj::NestingType& nest_obj) {
+            auto nested = [&](const TJsonObj::DictType& nest_obj) {
                 auto iter = nest_obj.find(key.data());
                 if (iter != nest_obj.end()) {
                     result = &(iter->second);
@@ -94,12 +94,12 @@ class TJson {
                 for (auto element = list_obj.begin(); element != list_obj.end();
                   ++element)
                 {
-                    if (holds_alternative< TJsonObj::NestingType >( // only nest
-                                                                    // to find
+                    if (holds_alternative< TJsonObj::DictType >( // only nest
+                                                                 // to find
                           element->get()))
                     {
                         auto& nest_obj =
-                          std::get< TJsonObj::NestingType >(element->get());
+                          std::get< TJsonObj::DictType >(element->get());
                         if (nested(nest_obj)) {
                             return true;
                         }
@@ -111,11 +111,9 @@ class TJson {
             while (!bfs_queue.empty()) {
                 auto bfs_front = bfs_queue.front();
                 bfs_queue.pop_front();
-                if (holds_alternative< TJsonObj::NestingType >(
-                      bfs_front->get()))
-                {
+                if (holds_alternative< TJsonObj::DictType >(bfs_front->get())) {
                     auto& nesting_obj =
-                      std::get< TJsonObj::NestingType >(bfs_front->get());
+                      std::get< TJsonObj::DictType >(bfs_front->get());
                     if (nested(nesting_obj)) {
                         break;
                     }

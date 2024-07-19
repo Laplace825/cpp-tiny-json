@@ -52,7 +52,7 @@ auto main() -> signed {
             iter->second.println();
         }
 
-        tj["student"] = TJsonObj::NestingType{
+        tj["student"] = TJsonObj::DictType{
           {"li",  10},
           {"bai", 9 }
         };

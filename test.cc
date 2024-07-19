@@ -48,7 +48,7 @@ auto main() -> signed {
         std::cout << "\033[1;32mmake student to a dict\n"
                      "make \"lop\" to \"hl\"\033[0m\n"
                      "make list[3] to \"chage] here\"\n";
-        tj["student"] = TJsonObj::NestingType{
+        tj["student"] = TJsonObj::DictType{
           {"li",  10},
           {"bai", 9 }
         };

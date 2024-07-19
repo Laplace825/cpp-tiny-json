@@ -280,7 +280,7 @@ TJsonObj deaList(std::string& json_str, _TJsonToken::Type& state,
 template < typename Callable >
 TJsonObj dealObjBegin(std::string& json_str, _TJsonToken::Type& state,
   std::size_t& reads, Callable&& op) {
-    TJsonObj::NestingType res{};
+    TJsonObj::DictType res{};
     reads = 1;
     while (reads < json_str.size()) {
         update_state(json_str, state, reads, 1);

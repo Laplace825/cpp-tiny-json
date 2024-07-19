@@ -35,16 +35,16 @@ class TJsonObj {
     }
 
   public:
-    using ListType    = std::vector< TJsonObj >;
-    using NestingType = std::unordered_map< std::string, TJsonObj >;
-    using value_type  = std::variant< std::monostate, // null
-       std::string,                                   // "String"
-       ListType,                                      // [1,2, "ss", {}]
-       NestingType, // {"key":{"value":"Hello"}}
-       double,      // 1.0
-       int,         // 1 2 10
-       bool         // true or false
-       >;
+    using ListType   = std::vector< TJsonObj >;
+    using DictType   = std::unordered_map< std::string, TJsonObj >;
+    using value_type = std::variant< std::monostate, // null
+      std::string,                                   // "String"
+      ListType,                                      // [1,2, "ss", {}]
+      DictType, // {"key":{"value":"Hello"}}
+      double,   // 1.0
+      int,      // 1 2 10
+      bool      // true or false
+      >;
 
   private:
     value_type m_value;
@@ -79,7 +79,7 @@ class TJsonObj {
                   }
                   DoInvoke("]");
               }
-              else if constexpr (std::is_same_v< T, NestingType >) {
+              else if constexpr (std::is_same_v< T, DictType >) {
                   DoInvoke("{");
                   for (auto it = arg.cbegin(); it != arg.cend(); ++it) {
                       DoInvoke(std::format("\"{}\": ", it->first));
@@ -111,11 +111,11 @@ class TJsonObj {
         call([](const auto&... arg) { ((std::cout << arg), ...); });
     }
 
-    std::pair< NestingType, std::string > toMap() const {
+    std::pair< DictType, std::string > toMap() const {
         std::ostringstream oss;
-        NestingType objMap;
-        if (std::holds_alternative< NestingType >(m_value)) {
-            for (const auto& [key, value] : std::get< NestingType >(m_value)) {
+        DictType objMap;
+        if (std::holds_alternative< DictType >(m_value)) {
+            for (const auto& [key, value] : std::get< DictType >(m_value)) {
                 objMap[key] = value;
             }
         }
@@ -155,11 +155,11 @@ class TJsonObj {
     }
 
     auto operator[](const std::string& key) -> TJsonObj& {
-        if (std::holds_alternative< NestingType >(m_value)) {
-            return std::get< NestingType >(m_value)[key];
+        if (std::holds_alternative< DictType >(m_value)) {
+            return std::get< DictType >(m_value)[key];
         }
         throw std::runtime_error(
-          "\033[1;31mNot a NestingType, can't use []\033[0m");
+          "\033[1;31mNot a DictType, can't use []\033[0m");
     }
 
     bool operator==(const TJsonObj& obj) const {
