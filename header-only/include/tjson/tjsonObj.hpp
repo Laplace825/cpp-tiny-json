@@ -1,7 +1,7 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28T17:45:52
- * @lastmod: 2024-07-19T00:35:40
+ * @lastmod: 2024-07-19T20:27:21
  * @description: the json object with all types
  * @filePath: /cpp-tiny-json/header-only/include/tjson/tjsonObj.hpp
  * @lastEditor: Laplace825

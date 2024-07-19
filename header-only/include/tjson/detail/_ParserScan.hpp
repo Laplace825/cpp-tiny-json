@@ -1,9 +1,9 @@
 /**
  * @author: Laplace825
  * @date: 2024-07-18T19:05:12
- * @lastmod: 2024-07-18T19:05:12
+ * @lastmod: 2024-07-19T20:27:57
  * @description: the detail of tjson implementation
- * @filePath: /tiny-json/header-only/include/tjson/tjsonParser.hpp
+ * @filePath: /cpp-tiny-json/header-only/include/tjson/detail/_ParserScan.hpp
  * @lastEditor: Laplace825
  * @ MIT license
  */

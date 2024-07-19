@@ -16,18 +16,14 @@ endif()
 
 project(
   tjson
-  VERSION 0.1.0
+  VERSION 0.1.8
   LANGUAGES CXX)
 
 add_executable("${PROJECT_NAME}-test" test.cc)
 add_executable("${PROJECT_NAME}" CLI.cc)
 
-target_include_directories(
-  "${PROJECT_NAME}-test"
-  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/header-only/include/")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/header-only/include/")
 
-target_include_directories(
-  "${PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/header-only/include/")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 message(STATUS "[${CMAKE_BUILD_TYPE}] ")

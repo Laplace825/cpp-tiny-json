@@ -1,9 +1,9 @@
 /**
  * @author: "laplace"
  * @date: 2024-06-29T15:28:39
- * @lastmod: 2024-06-30T00:07:12
+ * @lastmod: 2024-07-19T20:27:42
  * @description: used to read and store json file
- * @filePath: /tiny-json/header-only/include/tjson/tjfile.hpp
+ * @filePath: /cpp-tiny-json/header-only/include/tjson/tjfile.hpp
  * @lastEditor: Laplace825
  * @ MIT license
  */

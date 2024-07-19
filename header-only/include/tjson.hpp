@@ -1,7 +1,7 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28T17:43:53
- * @lastmod: 2024-07-20T17:31:29
+ * @lastmod: 2024-07-19T20:27:08
  * @description: TJson class to handle json string with method integrating
  * @filePath: /cpp-tiny-json/header-only/include/tjson.hpp
  * @lastEditor: Laplace825

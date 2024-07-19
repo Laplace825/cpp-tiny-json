@@ -1,9 +1,9 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28T10:27:35
- * @lastmod: 2024-06-30T13:50:58
+ * @lastmod: 2024-07-19T20:28:03
  * @description:
- * @filePath: /tiny-json/header-only/include/tjson/tjsonToken.hpp
+ * @filePath: /cpp-tiny-json/header-only/include/tjson/detail/_TJsonToken.hpp
  * @lastEditor: Laplace825
  * @ MIT license
  */
