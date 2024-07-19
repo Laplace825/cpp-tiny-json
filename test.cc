@@ -8,11 +8,9 @@
  * @ MIT lisence
  */
 
-#include "tjson.hpp"
-#include "tjson/tjfile.hpp"
-#include "tjson/tjprint.hpp"
-#include "tjson/tjsonObj.hpp"
-#include "tjson/tjsonParser.hpp"
+#include <tjson.hpp>
+#include <tjson/tjfile.hpp>
+#include <tjson/tjprint.hpp>
 
 auto main() -> signed {
     using namespace lap::tjson;
@@ -57,7 +55,6 @@ auto main() -> signed {
         tj.find("lop") = "hl";
         tj["list"][3]  = "chage] here";
         std::cout << tj << '\n';
-        tj.freshParser();
         tjf.dumpJsonObj2File(tj, "./testDumpChange.json");
 
         std::cout
