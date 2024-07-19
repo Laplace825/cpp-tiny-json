@@ -14,8 +14,8 @@
 namespace lap {
 namespace tjson {
 
-struct TJsonToken
-{
+namespace __detail {
+struct _TJsonToken {
     using Type = enum {
         BEGIN_OBJECT, // {
         END_OBJECT,   // }
@@ -40,9 +40,10 @@ struct TJsonToken
 
     Type m_value;
 
-    TJsonToken(Type value) : m_value(value) {}
+    _TJsonToken(Type value) : m_value(value) {}
 };
 
+} // namespace __detail
 } // namespace tjson
 } // namespace lap
 

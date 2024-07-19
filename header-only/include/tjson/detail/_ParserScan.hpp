@@ -14,12 +14,14 @@
 #include <charconv>
 #include <regex>
 
+#include "_TJsonToken.hpp"
 #include "tjson/tjsonObj.hpp"
-#include "tjson/tjsonToken.hpp"
 
 namespace lap {
 
 namespace tjson {
+
+namespace __detail {
 
 namespace _ParserScan {
 
@@ -93,53 +95,53 @@ char unescapeChar(char ch) {
     }
 }
 
-TJsonToken::Type scanChar(char json_begin = ' ') {
+_TJsonToken::Type scanChar(char json_begin = ' ') {
     /***
      * @description: scan the json string begin
      * and return the token type
      ***/
     if (json_begin == ' ') {
-        return TJsonToken::END;
+        return _TJsonToken::END;
     }
     else if (isNumberBegin(json_begin)) {
         // a number
-        return TJsonToken::VALUE_NUMBER;
+        return _TJsonToken::VALUE_NUMBER;
     }
     else if (isStringBegin(json_begin)) {
         // a string
-        return TJsonToken::VALUE_STRING;
+        return _TJsonToken::VALUE_STRING;
     }
     else if (isListBegin(json_begin)) {
         // a list
-        return TJsonToken::LIST_BEGIN;
+        return _TJsonToken::LIST_BEGIN;
     }
     else if (isJsonNestingBegin(json_begin)) {
         // a json object
-        return TJsonToken::BEGIN_OBJECT;
+        return _TJsonToken::BEGIN_OBJECT;
     }
     else if (isBooleanTrue(json_begin)) {
-        return TJsonToken::LITERAL_TRUE;
+        return _TJsonToken::LITERAL_TRUE;
     }
     else if (isBooleanFalse(json_begin)) {
-        return TJsonToken::LITERAL_FALSE;
+        return _TJsonToken::LITERAL_FALSE;
     }
     else if (isLiteralNull(json_begin)) {
-        return TJsonToken::LITERAL_NULL;
+        return _TJsonToken::LITERAL_NULL;
     }
     else {
         switch (json_begin) {
             case '}':
-                return TJsonToken::END_OBJECT;
+                return _TJsonToken::END_OBJECT;
             case ',':
-                return TJsonToken::VALUE_SEPRATOR;
+                return _TJsonToken::VALUE_SEPRATOR;
             case ':':
-                return TJsonToken::NAME_SEPRATOR;
+                return _TJsonToken::NAME_SEPRATOR;
             case ']':
-                return TJsonToken::LIST_END;
+                return _TJsonToken::LIST_END;
             default:
                 break;
         }
-        return TJsonToken::END;
+        return _TJsonToken::END;
     }
 }
 
@@ -201,7 +203,7 @@ std::optional< T > tryParse(std::string_view str) noexcept {
     return std::nullopt;
 }
 
-void update_state(std::string& json_str, TJsonToken::Type& state,
+void update_state(std::string& json_str, _TJsonToken::Type& state,
   std::size_t& reads, std::size_t begin) {
     reads    = jumpWhiteSpace(json_str, begin);
     state    = scanChar(json_str[reads]);
@@ -209,7 +211,7 @@ void update_state(std::string& json_str, TJsonToken::Type& state,
 };
 
 TJsonObj dealValueString(
-  std::string& json_str, TJsonToken::Type& state, std::size_t& reads) {
+  std::string& json_str, _TJsonToken::Type& state, std::size_t& reads) {
     // find the end of the json object
     auto find_res = json_str.find("\"");
     if (find_res != std::string::npos) {
@@ -230,7 +232,7 @@ TJsonObj dealValueString(
     }
 }
 
-TJsonObj dealValueNumber(std::string& json_str, TJsonToken::Type& state,
+TJsonObj dealValueNumber(std::string& json_str, _TJsonToken::Type& state,
   std::size_t& reads) { // regex the float number and the scientific notation
     std::regex number_re{"[-]?[0-9]+(\\.[0-9]*)?([eE][+-]?[0-9]+)?"};
 
@@ -255,7 +257,7 @@ TJsonObj dealValueNumber(std::string& json_str, TJsonToken::Type& state,
 }
 
 template < typename Callable >
-TJsonObj deaList(std::string& json_str, TJsonToken::Type& state,
+TJsonObj deaList(std::string& json_str, _TJsonToken::Type& state,
   std::size_t& reads, Callable&& op) {
     TJsonObj::ListType res{};
     reads = 1;
@@ -263,7 +265,7 @@ TJsonObj deaList(std::string& json_str, TJsonToken::Type& state,
         update_state(json_str, state, reads, 1);
 
         if (json_str[0] == ']' && json_str.size() > 1) {
-            state    = TJsonToken::LIST_END;
+            state    = _TJsonToken::LIST_END;
             json_str = json_str.substr(1);
             return TJsonObj{std::move(res)};
         }
@@ -276,7 +278,7 @@ TJsonObj deaList(std::string& json_str, TJsonToken::Type& state,
 }
 
 template < typename Callable >
-TJsonObj dealObjBegin(std::string& json_str, TJsonToken::Type& state,
+TJsonObj dealObjBegin(std::string& json_str, _TJsonToken::Type& state,
   std::size_t& reads, Callable&& op) {
     TJsonObj::NestingType res{};
     reads = 1;
@@ -284,13 +286,13 @@ TJsonObj dealObjBegin(std::string& json_str, TJsonToken::Type& state,
         update_state(json_str, state, reads, 1);
 
         if (json_str[0] == '}' && json_str.size() > 1) {
-            state    = TJsonToken::END_OBJECT;
+            state    = _TJsonToken::END_OBJECT;
             json_str = json_str.substr(1);
             return TJsonObj{std::move(res)};
         }
 
         if (json_str[0] == ':') {
-            state    = TJsonToken::VALUE_SEPRATOR;
+            state    = _TJsonToken::VALUE_SEPRATOR;
             json_str = json_str.substr(1);
             return std::forward< Callable >(op)(json_str, state, reads);
         }
@@ -312,6 +314,7 @@ TJsonObj dealObjBegin(std::string& json_str, TJsonToken::Type& state,
 }
 
 } // namespace _ParserScan
+} // namespace __detail
 
 } // namespace tjson
 } // namespace lap

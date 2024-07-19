@@ -15,9 +15,9 @@
 #include <string_view>
 #include <variant>
 
-#include "tjson/__detail.hpp"
+#include "tjson/detail/_ParserScan.hpp"
+#include "tjson/detail/_TJsonToken.hpp"
 #include "tjson/tjsonObj.hpp"
-#include "tjson/tjsonToken.hpp"
 
 namespace lap {
 
@@ -30,39 +30,41 @@ class Parser {
     TJsonObj m_json_obj;
     std::string m_origin_str;
 
-    static TJsonObj scanImpl(std::string& json_str, TJsonToken::Type& state,
+    static TJsonObj scanImpl(std::string& json_str,
+      __detail::_TJsonToken::Type& state,
       std::size_t&
         reads) { /***
                   * @param  reads {std::size_t}: how mach you have read
-                  * @param  state {TJsonTokenType}: use as a state machine
+                  * @param  state {__detail::_TJsonTokenType}: use as a state
+                  *machine
                   * @return sttd::pair {*}: the json object and the reads
                   * @exception: std::invalid_argument if the string can't be
                   *parsed
                   * @description: scan the json string and return the json
                   *object
                   ***/
-        using namespace _ParserScan;
+        using namespace __detail::_ParserScan;
         if (json_str.empty()) {
             return TJsonObj{std::monostate{}};
         }
 
         switch (state) {
-            case TJsonToken::VALUE_SEPRATOR: {
+            case __detail::_TJsonToken::VALUE_SEPRATOR: {
                 update_state(json_str, state, reads, 1);
                 return scanImpl(json_str, state, reads);
             }
-            case TJsonToken::NAME_SEPRATOR: {
+            case __detail::_TJsonToken::NAME_SEPRATOR: {
             }
-            case TJsonToken::BEGIN_OBJECT: {
+            case __detail::_TJsonToken::BEGIN_OBJECT: {
                 return dealObjBegin(json_str, state, reads, scanImpl);
             }
-            case TJsonToken::VALUE_NUMBER: {
+            case __detail::_TJsonToken::VALUE_NUMBER: {
                 return dealValueNumber(json_str, state, reads);
             }
-            case TJsonToken::VALUE_STRING: {
+            case __detail::_TJsonToken::VALUE_STRING: {
                 return dealValueString(json_str, state, reads);
             }
-            case TJsonToken::LITERAL_TRUE: {
+            case __detail::_TJsonToken::LITERAL_TRUE: {
                 if (json_str.substr(0, 4) == "true") {
                     json_str = json_str.substr(4);
                     return TJsonObj{true};
@@ -74,7 +76,7 @@ class Parser {
                 }
                 break;
             }
-            case TJsonToken::LITERAL_FALSE: {
+            case __detail::_TJsonToken::LITERAL_FALSE: {
                 if (json_str.substr(0, 5) == "false") {
                     json_str = json_str.substr(5);
                     return TJsonObj{false};
@@ -87,7 +89,7 @@ class Parser {
                 }
                 break;
             }
-            case TJsonToken::LITERAL_NULL: {
+            case __detail::_TJsonToken::LITERAL_NULL: {
                 if (json_str.substr(0, 4) == "null") {
                     json_str = json_str.substr(4);
                     return TJsonObj{std::monostate{}};
@@ -100,7 +102,7 @@ class Parser {
                 }
                 break;
             }
-            case TJsonToken::LIST_BEGIN: {
+            case __detail::_TJsonToken::LIST_BEGIN: {
                 return deaList(json_str, state, reads, scanImpl);
             }
             default:
@@ -110,30 +112,32 @@ class Parser {
     }
 
   public:
-    Parser() = default;
+    Parser()  = default;
     ~Parser() = default;
 
     Parser(std::string json_str)
-        : m_origin_str{_ParserScan::escapeString(json_str)} {
+        : m_origin_str{__detail::_ParserScan::escapeString(json_str)} {
         this->operator()();
     }
 
     void set(std::string json_str) {
-        m_origin_str = _ParserScan::escapeString(json_str);
+        m_origin_str = __detail::_ParserScan::escapeString(json_str);
         this->operator()();
     }
 
     TJsonObj operator()() {
-        std::string json_str   = m_origin_str;
-        std::size_t reads      = _ParserScan::jumpWhiteSpace(json_str, 0);
-        TJsonToken::Type state = _ParserScan::scanChar(json_str[reads]);
-        json_str               = json_str.substr(reads);
-        m_json_obj             = scanImpl(json_str, state, reads);
+        std::string json_str = m_origin_str;
+        std::size_t reads = __detail::_ParserScan::jumpWhiteSpace(json_str, 0);
+        __detail::_TJsonToken::Type state =
+          __detail::_ParserScan::scanChar(json_str[reads]);
+        json_str   = json_str.substr(reads);
+        m_json_obj = scanImpl(json_str, state, reads);
         return m_json_obj;
     }
 
     TJsonObj operator()(std::string_view json_str) {
-        m_json_obj.set(_ParserScan::escapeString(std::string(json_str)));
+        m_json_obj.set(
+          __detail::_ParserScan::escapeString(std::string(json_str)));
         return this->operator()();
     }
 

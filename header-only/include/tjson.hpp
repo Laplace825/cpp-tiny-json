@@ -20,7 +20,6 @@
 
 #include "tjson/tjsonObj.hpp"
 #include "tjson/tjsonParser.hpp"
-#include "tjson/tjsonToken.hpp"
 
 namespace lap {
 
@@ -32,30 +31,27 @@ class TJson {
         return os;
     }
 
-  public:
-    using Token = TJsonToken;
-
   protected:
     TJsonObj::NestingType m_json_dict;
-    Parser m_parser;
 
   public:
     TJson()  = default;
     ~TJson() = default;
 
-    explicit TJson(const std::string& json_str) : m_parser(json_str) {
-        /***
-         * @brief: will process and get the json to a unordered_map
-         * @param: json_str {string_view}: your json string
-         ***/
-        for (const auto& [key, value] : m_parser.m_json_obj.toMap().first) {
+    /***
+     * @brief: will process and get the json to a unordered_map
+     * @param: json_str {string_view}: your json string
+     ***/
+    explicit TJson(const std::string& json_str) {
+        Parser parser(json_str);
+        for (const auto& [key, value] : parser.m_json_obj.toMap().first) {
             m_json_dict[key] = value;
         }
     }
 
     void setJsonStr(std::string json_str) {
-        m_parser.set(std::move(json_str));
-        for (const auto& [key, value] : m_parser.m_json_obj.toMap().first) {
+        Parser parser(std::move(json_str));
+        for (const auto& [key, value] : parser.m_json_obj.toMap().first) {
             m_json_dict[key] = value;
         }
     }
@@ -180,11 +176,6 @@ class TJson {
         }
         oss << "}";
         return oss.str();
-    }
-
-    void freshParser() {
-        m_parser.clear();
-        m_parser.set(toString());
     }
 
     auto cbegin() const { return m_json_dict.cbegin(); }

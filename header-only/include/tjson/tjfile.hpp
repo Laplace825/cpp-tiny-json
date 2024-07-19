@@ -16,8 +16,8 @@
 #include <ios>
 #include <type_traits>
 
+#include "detail/_ParserScan.hpp"
 #include "tjson.hpp"
-#include "tjson/__detail.hpp"
 #include "tjson/tjsonObj.hpp"
 
 namespace lap {
@@ -71,7 +71,7 @@ class TJsonFile {
               "\033[1;33mstore to\033[0m : {}\n", std::move(default_path));
         }
 
-        ofs << _ParserScan::unescapeString(m_json_str);
+        ofs << __detail::_ParserScan::unescapeString(m_json_str);
 
         if (!ofs) {
             throw std::runtime_error(std::format(
