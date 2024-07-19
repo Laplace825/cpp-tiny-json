@@ -3,11 +3,14 @@
         1,
         2,
         3,
-        "Hel\tlo",
+        "chage] here",
         "p]",
         {
-            "lop": 2,
-            "student": 1
+            "lop": "hl",
+            "student": {
+                "bai": 9,
+                "li": 10
+            }
         }
     ],
     "score": {
