@@ -15,9 +15,58 @@
 
 ## example
 
+### CLI:
+
 ```bash
 $ tjson -r ./file.json -s ./file_store.json
 $ tjson -r ./file.json -p -f "name" 
+```
+### Code:
+
+```cpp
+#include <tjson.hpp>
+#include <tjson/tjfile.hpp>
+#include <tjson/tjprint.hpp>
+
+
+auto main() -> signed {
+    using namespace lap::tjson;
+    try {
+        TJsonFile tjf;
+        tjf.readJsonFile("./test.json");
+
+        TJson tj;
+        tj.setJsonStr(tjf.getJsonStr());
+        tjf.dumpJsonObj2File(tj, "./testDump.json");
+        
+        // @note: in header file tjson/tjprint.hpp
+        Tjprint(tj);
+
+        tj.find("name").println();
+
+        tj["list"][4].println();
+        tj["list"][5].println();
+
+        for (auto iter = tj.cbegin(); iter != tj.cend(); ++iter) {
+            std::cout << iter->first << ": ";
+            iter->second.println();
+        }
+
+        tj["student"] = TJsonObj::NestingType{
+          {"li",  10},
+          {"bai", 9 }
+        };
+        tj.find("lop") = "hl";
+        tj["list"][3]  = "chage] here";
+        std::cout << tj << '\n';
+
+        tjf.dumpJsonObj2File(tj, "./testDumpChange.json");
+
+        tj.find("this will throw error");
+    } catch (const std::exception& e) {
+        std::cerr << "error: " << e.what() << '\n';
+    }
+}
 ```
 
 ## question
