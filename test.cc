@@ -1,7 +1,7 @@
 /**
  * @author: Laplace825
  * @date: 2024-06-28 10:23:40
- * @lastmod: 2024-07-19T01:59:44
+ * @lastmod: 2024-07-19T18:14:41
  * @description: a test file
  * @filePath: /cpp-tiny-json/test.cc
  * @lastEditor: Laplace825
@@ -16,24 +16,53 @@
 
 auto main() -> signed {
     using namespace lap::tjson;
-    TJsonFile tjf;
-    tjf.readJsonFile("./test.json");
+    try {
+        TJsonFile tjf;
+        std::cout << "\033[1;32m>>> read the json file\033[0m\n";
+        tjf.readJsonFile("./test.json");
 
-    std::cout << "\033[1;32mstore to ./testDump.json \033[0m";
+        TJson tj;
+        std::cout
+          << "\033[1;32m>>> set the json string to json object\033[0m\n";
+        tj.setJsonStr(tjf.getJsonStr());
+        tjf.dumpJsonObj2File(tj, "./testDump.json");
 
-    TJson tj;
-    tj.setJsonStr(tjf.getJsonStr());
-    tjf.dumpJsonObj2File(tj, "./testDump.json");
+        std::cout << "\033[1;32m>>> print the json object\033[0m\n";
+        Tjprint(tj);
 
-    std::cout << "\033[1;32mprint the json object\033[0m\n";
-    Tjprint(tj);
-    std::cout << "\033[1;32mfn find the key's value in json object\033[0m\n";
-    tj.find("name")->println();
-    std::cout << "\033[1;32mop [] the key's value in json object\033[0m\n";
-    (*tj["list"])[4].println();
-    (*tj["list"])[5].println();
+        std::cout
+          << "\033[1;32m>>> fn find the key's value in json object\033[0m\n";
+        tj.find("name").println();
 
-    *tj["student"] = 100;
-    tj.println();
-    tjf.dumpJsonObj2File(tj, "./testDumpChangeStudent.json");
+        std::cout
+          << "\033[1;32m>>> op [] the key's value in json object\033[0m\n";
+        tj["list"][4].println();
+        tj["list"][5].println();
+
+        std::cout
+          << "\033[1;32m>>> use iterator to visit the json object\033[0m\n";
+        for (auto iter = tj.cbegin(); iter != tj.cend(); ++iter) {
+            std::cout << iter->first << ": ";
+            iter->second.println();
+        }
+
+        std::cout << "\033[1;32m>>> change the json object\033[0m\n";
+        std::cout << "\033[1;32mmake student to a dict\n"
+                     "make \"lop\" to \"hl\"\033[0m\n"
+                     "make list[3] to \"chage] here\"\n";
+        tj["student"] = TJsonObj::NestingType{
+          {"li",  10},
+          {"bai", 9 }
+        };
+        tj.find("lop") = "hl";
+        tj["list"][3]  = "chage] here";
+        std::cout << tj << '\n';
+        tjf.dumpJsonObj2File(tj, "./testDumpChangeStudent.json");
+
+        std::cout
+          << "\033[1;32mfind a can't find key in the json object\033[0m\n";
+        tj.find("this will throw error");
+    } catch (const std::exception& e) {
+        std::cerr << "error: " << e.what() << '\n';
+    }
 }
