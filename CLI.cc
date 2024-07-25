@@ -8,7 +8,6 @@
  * @ MIT license
  */
 
-#include <format>
 #include <iostream>
 #include <string_view>
 
@@ -31,8 +30,8 @@ void help_msg() {
                  "  -f, --find: find the key's value in json object\n"
                  "[example]:\n"
                  "tjson -r ./file.json\n -s ./file_store.json\n";
-    std::cout << std::format("Now in path \033[1;32m{}\033[0m\n",
-      std::filesystem::current_path().c_str());
+    std::cout << "Now in path \033[1;32m"
+              << std::filesystem::current_path().c_str() << "\033[0m\n";
 }
 
 void what_to_do(
@@ -54,8 +53,8 @@ void what_to_do(
     else if (command == "-f" || command == "--find") {
         auto findResult = tjson[readStoreOrFind];
         if (findResult != TJsonObj{}) {
-            std::cout << std::format("\033[1;32m{}\033[0m:", readStoreOrFind)
-                      << findResult << std::endl;
+            std::cout << "\033[1;32m" << readStoreOrFind
+                      << "\033[0m:" << findResult << std::endl;
         }
         else {
             std::cout << "null, \033[1;34mmaybe you should read json file "

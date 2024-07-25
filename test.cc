@@ -26,7 +26,7 @@ auto main() -> signed {
         tjf.dumpJsonObj2File(tj, "./testDump.json");
 
         std::cout << "\033[1;32m>>> print the json object\033[0m\n";
-        Tjprint(tj);
+        TJprint(tj);
 
         std::cout
           << "\033[1;32m>>> fn find the key's value in json object\033[0m\n";

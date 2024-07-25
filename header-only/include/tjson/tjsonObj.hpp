@@ -15,6 +15,7 @@
 #include <format>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -60,7 +61,7 @@ class TJsonObj {
                   DoInvoke("null");
               }
               else if constexpr (std::is_same_v< T, std::string >) {
-                  DoInvoke(std::format("\"{}\"", arg));
+                  DoInvoke("\"" + arg + "\"");
               }
               else if constexpr (std::is_same_v< T, double >) {
                   DoInvoke(arg);
@@ -82,7 +83,7 @@ class TJsonObj {
               else if constexpr (std::is_same_v< T, DictType >) {
                   DoInvoke("{");
                   for (auto it = arg.cbegin(); it != arg.cend(); ++it) {
-                      DoInvoke(std::format("\"{}\": ", it->first));
+                      DoInvoke("\"" + it->first + "\": ");
                       it->second.call(op);
                       if (std::next(it) != arg.cend()) DoInvoke(", ");
                   }
@@ -123,8 +124,7 @@ class TJsonObj {
             throw std::runtime_error(
               "\033[1;31mNot a DictType, maybe { or } is missing\033[0m");
         }
-        call([&oss](
-               const auto&... arg) { ((oss << std::format("{}", arg)), ...); });
+        call([&oss](const auto&... arg) { ((oss << arg), ...); });
         return {objMap, oss.str()};
     }
 
@@ -140,8 +140,9 @@ class TJsonObj {
         return *this;
     }
 
-    template < typename T >
-        requires(!std::is_same_v< T, TJsonObj >)
+    template < typename T,
+      typename = std::enable_if_t< !std::is_same_v< T, TJsonObj > > >
+    // requires(!std::is_same_v< T, TJsonObj >)
     void set(const T& src) {
         m_value = src;
     }
@@ -164,6 +165,10 @@ class TJsonObj {
 
     bool operator==(const TJsonObj& obj) const {
         return m_value == obj.m_value;
+    }
+
+    bool operator!=(const TJsonObj& obj) const {
+        return m_value != obj.m_value;
     }
 
     std::string toString() const {

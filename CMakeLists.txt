@@ -24,7 +24,6 @@ add_executable("${PROJECT_NAME}" CLI.cc)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/header-only/include/")
 
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 message(STATUS "[${CMAKE_BUILD_TYPE}] ")
 message(STATUS "${CMAKE_CXX_COMPILER}")

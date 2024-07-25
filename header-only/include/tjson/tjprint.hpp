@@ -24,7 +24,7 @@ namespace tjson {
  * @param tj {T}: T may be TJson, TJsonObj
  */
 template < typename T >
-void Tjprint(const T& tj) {
+void TJprint(const T& tj) {
     if constexpr (std::is_same_v< T, TJsonObj >) {
         tj.println();
     }
