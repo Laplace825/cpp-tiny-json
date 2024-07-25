@@ -10,6 +10,7 @@
 #ifndef __TJSON_PARSER_HPP__
 #define __TJSON_PARSER_HPP__
 
+#include <format>
 #include <string_view>
 #include <variant>
 
@@ -68,9 +69,9 @@ class Parser {
                     return TJsonObj{true};
                 }
                 else {
-                    throw std::invalid_argument("\033[1;31mjson boolean" +
-                                                json_str.substr(0, 4) +
-                                                ",maybe you mean true\033[0m");
+                    throw std::invalid_argument(std::format(
+                      "\033[1;31mjson boolean {} ,maybe you mean true\033[0m",
+                      json_str.substr(0, 4)));
                 }
                 break;
             }
@@ -80,9 +81,10 @@ class Parser {
                     return TJsonObj{false};
                 }
                 else {
-                    throw std::invalid_argument("\033[1;31mjson boolean" +
-                                                json_str.substr(0, 5) +
-                                                ",maybe you mean false\033[0m");
+                    throw std::invalid_argument(
+                      std::format("\033[1;31mjson boolean {} ,maybe you mean "
+                                  "false\033[0m",
+                        json_str.substr(0, 5)));
                 }
                 break;
             }
@@ -92,9 +94,10 @@ class Parser {
                     return TJsonObj{std::monostate{}};
                 }
                 else {
-                    throw std::invalid_argument("\033[1;31mjson NULL " +
-                                                json_str.substr(0, 4) +
-                                                " maybe you mean null\033[0m");
+                    throw std::invalid_argument(
+                      std::format("\033[1;31mjson NULL {} ,maybe you mean "
+                                  "null\033[0m",
+                        json_str.substr(0, 4)));
                 }
                 break;
             }

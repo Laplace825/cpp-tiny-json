@@ -13,7 +13,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <ios>
 #include <type_traits>
 
 #include "detail/_ParserScan.hpp"
@@ -82,10 +81,8 @@ class TJsonFile {
 
     bool storeJsonStr2Where() const { return storeJsonStr2Where(m_path); }
 
-    template < typename T,
-      typename = std::enable_if_t< std::is_same_v< T, TJsonObj > ||
-                                   std::is_same_v< T, TJson > > >
-    // requires(std::is_same_v< T, TJsonObj > || std::is_same_v< T, TJson >)
+    template < typename T >
+        requires(std::is_same_v< T, TJsonObj > || std::is_same_v< T, TJson >)
     bool dumpJsonObj2File(
       const T& json_obj, const std::filesystem::path& path = "") {
         m_json_str = std::move(json_obj.toString());

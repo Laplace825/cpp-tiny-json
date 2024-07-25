@@ -9,8 +9,6 @@
  * @ MIT license
  */
 
-#include <type_traits>
-
 #include "tjson.hpp"
 #include "tjson/tjsonObj.hpp"
 
